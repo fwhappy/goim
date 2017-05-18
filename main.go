@@ -5,9 +5,9 @@ import (
 	"goim/core"
 	"io"
 	"net"
-	"protocal"
 	"runtime"
 
+	"github.com/fwhappy/protocal"
 	"github.com/fwhappy/util"
 )
 

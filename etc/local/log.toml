@@ -1,0 +1,29 @@
+# 是否输出到控制台 true|false
+log_adapter_console=true
+# 输出到命令行的日志级别 2:critical;3:error;4:warning;5:notice;6:info;7:debug
+log_console_level = 7
+# 日志保留路径
+log_file="/data/goim/main.log"
+# 文件日志级别 2:critical;3:error;4:warning;5:notice;6:info;7:debug
+log_file_level=7
+# 是否输出行号和文件名 true|false
+log_enable_func_call_depth=true
+# 是否异步输出,提升性能 true|false
+log_async=true
+# 异步channel大小
+log_chan_length=10000
+# 是否开启日志rotate true|false
+log_rotate=true
+# 是否按照每天rotate true|false
+log_daily=false
+# 单个文件行数限制
+log_maxlines=0
+# 单个文件大小限制
+log_maxsize=10240000
+# 文件最多保留天数
+log_maxdays = 7
+# 是否分文件存储日志 true|false
+log_multifile=true
+# 分文件存储的日志类型
+#log_separate=["critical","error","warning","notice","info","debug"]
+log_separate=["info", "warning", "error"]

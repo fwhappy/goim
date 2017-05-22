@@ -1,5 +1,5 @@
-hash: bfc5ea44f9370392e4b7c2e78072be608e7262068b66de6e6e04af24ee204309
-updated: 2017-05-18T16:01:25.530739116+08:00
+hash: 5a85ae57a11fb13b4d457aa134628eb4db763e69f1f1d51393a55a89981aa539
+updated: 2017-05-19T17:29:57.123052811+08:00
 imports:
 - name: github.com/astaxie/beego
   version: 7452151beec2f43c42122fd91b7523bcbccf05be
@@ -10,5 +10,28 @@ imports:
 - name: github.com/fwhappy/protocal
   version: 12b5696436da173529d4d5f4ede45c41453a5bf5
 - name: github.com/fwhappy/util
-  version: 60387c761802214a3698f60055c0ff0a8d592ad3
+  version: b1f3db880bf93e953dd7222f020bd1754f3f43fc
+- name: github.com/golang/protobuf
+  version: 2402d76f3d41f928c7902a765dfc872356dd3aad
+  subpackages:
+  - proto
+- name: golang.org/x/net
+  version: f315505cf3349909cdf013ea56690da34e96a451
+  subpackages:
+  - context
+- name: google.golang.org/appengine
+  version: 170382fa85b10b94728989dfcf6cc818b335c952
+  subpackages:
+  - datastore
+  - internal
+  - internal/app_identity
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/modules
+  - internal/remote_api
+- name: gopkg.in/vmihailenco/msgpack.v2
+  version: f4f8982de4ef0de18be76456617cc3f5d8d8141e
+  subpackages:
+  - codes
 testImports: []

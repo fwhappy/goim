@@ -26,12 +26,8 @@ type LogConfig struct {
 	Log_separate               []string
 }
 
-type mLog struct {
-	*logs.BeeLogger
-}
-
 // Logger 日志对象
-var Logger *mLog
+var Logger *logs.BeeLogger
 
 // LoadLoggerConfig 加载日志配置
 func LoadLoggerConfig(file string) {
@@ -46,21 +42,21 @@ func LoadLoggerConfig(file string) {
 	}
 
 	// 加载log
-	log := logs.NewLogger()
+	Logger = logs.NewLogger()
 	// 设置异步输出
 	if logConfig.Log_async {
-		log.Async(int64(logConfig.Log_chan_length))
+		Logger.Async(int64(logConfig.Log_chan_length))
 	}
 	// 设置输出文件名、文件行数
 	if logConfig.Log_enable_func_call_depth {
-		log.EnableFuncCallDepth(true)
+		Logger.EnableFuncCallDepth(true)
 	}
 	// 设置控制台输出
 	if logConfig.Log_adapter_console {
 		consoleConfig := make(map[string]int)
 		consoleConfig["level"] = logConfig.Log_console_level
 		byt, _ := json.Marshal(consoleConfig)
-		log.SetLogger(logs.AdapterConsole, string(byt))
+		Logger.SetLogger(logs.AdapterConsole, string(byt))
 	}
 
 	fileConfig := make(map[string]interface{})
@@ -73,36 +69,12 @@ func LoadLoggerConfig(file string) {
 	if logConfig.Log_multifile {
 		fileConfig["separate"] = logConfig.Log_separate
 		byt, _ := json.Marshal(fileConfig)
-		log.SetLogger(logs.AdapterMultiFile, string(byt))
+		Logger.SetLogger(logs.AdapterMultiFile, string(byt))
 	} else {
 		byt, _ := json.Marshal(fileConfig)
-		log.SetLogger(logs.AdapterFile, string(byt))
+		Logger.SetLogger(logs.AdapterFile, string(byt))
 	}
 
 	// 据说不这样做，会有一些性能问题
-	log.SetLevel(logConfig.Log_file_level)
-
-	Logger = &mLog{log}
-}
-
-func (log *mLog) Trace(format string, v ...interface{}) {
-	log.Trace(format, v...)
-}
-func (log *mLog) Tracef(format string, v ...interface{}) {
-	log.Trace(format, v...)
-}
-func (log *mLog) Debugf(format string, v ...interface{}) {
-	log.Debug(format, v...)
-}
-func (log *mLog) Infof(format string, v ...interface{}) {
-	log.Info(format, v...)
-}
-func (log *mLog) Warnf(format string, v ...interface{}) {
-	log.Warn(format, v...)
-}
-func (log *mLog) Errorf(format string, v ...interface{}) {
-	log.Error(format, v...)
-}
-func (log *mLog) Criticalf(format string, v ...interface{}) {
-	log.Critical(format, v...)
+	Logger.SetLevel(logConfig.Log_file_level)
 }

@@ -1,6 +1,7 @@
 package room
 
 import (
+	"goim/user"
 	"sync"
 )
 
@@ -18,15 +19,10 @@ func NewRoom(id string) (*Room, error) {
 }
 
 // AddUser 给房间添加一个用户
-func (r *Room) AddUser(u *User) error {
+func (r *Room) AddUser(u *user.User) error {
 	r.Mux.RLock()
 	defer r.Mux.RUnlock()
 
-	r.Users = append(r.Users, u.UserId)
+	r.Users = append(r.Users, u.Id)
 	return nil
-}
-
-// Len 房间用户列表
-func (r *Room) Len() int {
-	return len(r.Users)
 }

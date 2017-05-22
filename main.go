@@ -3,6 +3,10 @@ package main
 import (
 	"flag"
 	"goim/core"
+	"goim/hall"
+	"goim/router"
+	hallService "goim/service/hall"
+	userService "goim/service/user"
 	"io"
 	"net"
 	"runtime"
@@ -39,7 +43,6 @@ func main() {
 // listenAndServe 开始监听并提供服务
 func listenAndServe() {
 	listenRemote := "0.0.0.0:" + *port
-	core.Logger.Debug("listen at:%v, pid:%v", listenRemote)
 	tcpAddr, resolveErr := net.ResolveTCPAddr("tcp", listenRemote)
 	if resolveErr != nil {
 		core.Logger.Error("listenAndServe ResolveTCPAddr Error:%s", resolveErr.Error())
@@ -50,7 +53,7 @@ func listenAndServe() {
 		core.Logger.Error("listenAndServe ListenTCP Error:%s", listenErr.Error())
 		return
 	}
-	core.Logger.Info("server lisen at: " + remote)
+	core.Logger.Info("server lisen at: " + listenRemote)
 
 	// 监听连接事件
 	for {
@@ -65,8 +68,9 @@ func listenAndServe() {
 	}
 }
 
-func serve() {
+func serve(conn *net.TCPConn) {
 	core.Logger.Debug("New User connected: %s.", conn.RemoteAddr().String())
+
 	// 记录当前连接的用户id
 	var userId string
 
@@ -80,21 +84,23 @@ func serve() {
 
 			stack := make([]byte, 1024)
 			stack = stack[:runtime.Stack(stack, true)]
-			core.Logger.Debugf("stack:\n%s", string(stack))
-			core.Logger.Debugf("defer disconnected: %s.", conn.RemoteAddr().String())
+			core.Logger.Debug("stack:\n%s", string(stack))
+			core.Logger.Debug("defer disconnected: %s.", conn.RemoteAddr().String())
 		}
 
 		// 断开用户连接
-		if userId > 0 {
-			//fixme 这里直接调用Action，有点逻辑混乱
-			// game.KickAction(userId)
+		if userId != "" {
+			if u, online := hall.UserSet.Get(userId); online {
+				userService.KickUser(u)
+			}
 		} else {
 			conn.Close()
 			c <- -1
 		}
 	}()
 
-	// 检测用户连接之后，如果在规定时间内handshark成功，需要断开连接，防止无效的连接
+	// 检测用户连接之后，如果在规定时间内handshake成功，需要断开连接，防止无效的连接
+	go hallService.ListenHandShakeTimeout(conn, c)
 
 	// 解析消息
 	for {
@@ -106,9 +112,9 @@ func serve() {
 			switch err {
 			case io.EOF:
 				// 关闭退出
-				core.Logger.Debugf("User disconnected, remote: %s.", conn.RemoteAddr().String())
+				core.Logger.Debug("User disconnected, remote: %s.", conn.RemoteAddr().String())
 			case io.ErrUnexpectedEOF:
-				core.Logger.Debugf("unexpected EOF, remote: %s.", conn.RemoteAddr().String())
+				core.Logger.Debug("unexpected EOF, remote: %s.", conn.RemoteAddr().String())
 			default:
 				// 协议解析错误
 				core.Logger.Error(err.Error())
@@ -116,6 +122,6 @@ func serve() {
 			break
 		}
 
-		// router.Dispatch(&userId, impacket, conn, c)
+		router.Dispatch(&userId, conn, impacket, c)
 	}
 }

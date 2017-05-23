@@ -1,5 +1,5 @@
 hash: 5a85ae57a11fb13b4d457aa134628eb4db763e69f1f1d51393a55a89981aa539
-updated: 2017-05-19T17:29:57.123052811+08:00
+updated: 2017-05-23T15:40:28.062497289+08:00
 imports:
 - name: github.com/astaxie/beego
   version: 7452151beec2f43c42122fd91b7523bcbccf05be
@@ -10,7 +10,7 @@ imports:
 - name: github.com/fwhappy/protocal
   version: 12b5696436da173529d4d5f4ede45c41453a5bf5
 - name: github.com/fwhappy/util
-  version: b1f3db880bf93e953dd7222f020bd1754f3f43fc
+  version: 0f3df8c12b0a8ba9ba60b7a7e3861d9d9fc4a8b1
 - name: github.com/golang/protobuf
   version: 2402d76f3d41f928c7902a765dfc872356dd3aad
   subpackages:
@@ -20,7 +20,7 @@ imports:
   subpackages:
   - context
 - name: google.golang.org/appengine
-  version: 170382fa85b10b94728989dfcf6cc818b335c952
+  version: a2f4131514e563cedfdb6e7d267df9ad48591e93
   subpackages:
   - datastore
   - internal

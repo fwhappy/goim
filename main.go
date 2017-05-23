@@ -90,7 +90,7 @@ func serve(conn *net.TCPConn) {
 
 		// 断开用户连接
 		if userId != "" {
-			if u, online := hall.UserSet.Get(userId); online {
+			if u, online := hall.UserSet.Get(userId); online && u.Conn == conn {
 				userService.KickUser(u)
 			}
 		} else {

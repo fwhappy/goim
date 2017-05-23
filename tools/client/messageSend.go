@@ -5,12 +5,12 @@ import (
 	"goim/config"
 	"goim/core/msgpack"
 	"os"
-	"protocal"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/fwhappy/protocal"
 	"github.com/fwhappy/util"
 )
 
@@ -24,6 +24,10 @@ var (
 	mg                *numberGenerator
 	heartbeatInterval int
 )
+
+func init() {
+	mg = &numberGenerator{mux: &sync.Mutex{}}
+}
 
 // 生成一个消息号
 func (mg *numberGenerator) getNumber() uint32 {
@@ -73,6 +77,12 @@ func onInput() {
 		params := strings.Split(input, ".")
 		p1, _ := strconv.Atoi(params[0])
 		packageType = uint8(p1)
+
+		if packageType != protocal.PACKAGE_TYPE_HANDSHAKE && id == "" {
+			showClientError("请先登录")
+			continue
+		}
+
 		switch packageType {
 		case protocal.PACKAGE_TYPE_HANDSHAKE: // 握手
 			c2sHandShake(params[1:]...)
@@ -120,7 +130,7 @@ func c2sJoinRoomRequest(args []string) {
 		showClientError("未输入房间号")
 		return
 	}
-	body := util.JsonMap{"roomId": roomId}
+	body := util.JsonMap{"room_id": roomId}
 	sendData(config.MESSAGE_ID_JOIN_ROOM_REQUEST, protocal.MSG_TYPE_REQUEST, body)
 }
 
@@ -131,7 +141,7 @@ func c2sQuitRoomRequset(args []string) {
 		showClientError("未输入房间号")
 		return
 	}
-	body := util.JsonMap{"roomId": roomId}
+	body := util.JsonMap{"room_id": roomId}
 	sendData(config.MESSAGE_ID_QUIT_ROOM_REQUEST, protocal.MSG_TYPE_REQUEST, body)
 }
 
@@ -164,7 +174,7 @@ func c2sRoomMessageRequest(args []string) {
 	if toId == "" || content == "" {
 		showClientError("房间id和内容不能为空,toId:%v, content:%v", toId, content)
 	}
-	body := util.JsonMap{"id": toId, "content": content}
+	body := util.JsonMap{"room_id": toId, "content": content}
 	sendData(config.MESSAGE_ID_ROOM_MESSAGE_REQUEST, protocal.MSG_TYPE_REQUEST, body)
 }
 
@@ -201,15 +211,29 @@ func c2sBroadcastMessageNotify(args []string) {
 
 // 客户端向服务端发送握手协议
 func c2sHandShake(args ...string) {
+	if len(args) < 2 {
+		showClientError("参数缺失")
+		return
+	}
 	userInfo := make(util.JsonMap)
 	extra := make(util.JsonMap)
 	userInfo["id"] = args[0]
 	userInfo["nickname"] = args[1]
-	extra["extra1"] = args[2]
-	extra["extra2"] = args[3]
+
+	// 生成额外参数
+	extraParams := args[2:]
+	if extraLen := len(extraParams) / 2; extraLen > 0 {
+		for i := 0; i < extraLen; i++ {
+			argIndex := i * 2
+			argName := getParams(argIndex, extraParams)
+			argValue := getParams(argIndex+1, extraParams)
+			extra[argName] = argValue
+		}
+	}
 	userInfo["extra"] = extra
-	id = args[0]
 	send(protocal.PACKAGE_TYPE_HANDSHAKE, userInfo)
+
+	id = args[0]
 
 	showClientDebug("send handShake")
 }
@@ -234,6 +258,10 @@ func c2sHeartBeat() {
 
 // 用户退出
 func c2sLogout() {
+	if id == "" {
+		showClientError("用户未登陆")
+		return
+	}
 	// 发送消息给服务器
 	send(protocal.PACKAGE_TYPE_KICK, nil)
 	showClientDebug("send c2sLogout")

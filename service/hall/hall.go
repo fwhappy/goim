@@ -18,7 +18,7 @@ func ListenHandShakeTimeout(conn *net.TCPConn, c chan int) {
 	case value := <-c:
 		core.Logger.Debug("用户握手成功或断开了连接，退出监听:%v,remote:%v", value, conn.RemoteAddr().String())
 		break
-	case <-time.After(10 * time.Second):
+	case <-time.After(30 * time.Second):
 		core.Logger.Debug("用户长时间未handshake成功，断开连接:%s", conn.RemoteAddr().String())
 		conn.Close()
 		break

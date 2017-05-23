@@ -1,12 +1,12 @@
 package user
 
 import (
-	userService "goim/service/user"
+	"goim/response"
 	"net"
 
-	"goim/response"
-
 	"github.com/fwhappy/protocal"
+
+	userService "goim/service/user"
 )
 
 // HandShake 用户握手

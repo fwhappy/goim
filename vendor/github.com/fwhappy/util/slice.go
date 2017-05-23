@@ -97,3 +97,38 @@ func SliceJoin(s []int, joinString string) string {
 	}
 	return str
 }
+
+// InStringSlice 判断某个string值是否在切片中
+func InStringSlice(finder string, slice []string) bool {
+	exists := false
+	for _, v := range slice {
+		if v == finder {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
+// SliceDelString 删除slice中的某些元素
+func SliceDelString(slice []string, values ...string) []string {
+	if slice == nil || len(values) == 0 {
+		return slice
+	}
+	for _, value := range values {
+		slice = sliceDelString(slice, value)
+	}
+	return slice
+}
+
+func sliceDelString(slice []string, value string) []string {
+	if slice == nil {
+		return slice
+	}
+	for i, j := range slice {
+		if j == value {
+			return append(slice[:i], slice[i+1:]...)
+		}
+	}
+	return slice
+}

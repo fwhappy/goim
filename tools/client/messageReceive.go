@@ -5,7 +5,6 @@ import (
 	"goim/core/msgpack"
 	"io"
 	"os"
-
 	"strconv"
 
 	"github.com/fwhappy/protocal"
@@ -74,15 +73,15 @@ func onRecivedData(impacket *protocal.ImPacket) {
 		s2cQuitRoomPush(body)
 	case config.MESSAGE_ID_PRIVATE_MESSAGE_RESPONSE:
 		s2cPrivateMessageResponse(messageNumber, body)
-	case config.MESSAGE_ID_PRIVATE_MESSAGE_NOTIFY:
+	case config.MESSAGE_ID_PRIVATE_MESSAGE_PUSH:
 		s2cPrivateMessagePush(body)
 	case config.MESSAGE_ID_ROOM_MESSAGE_RESPONSE:
 		s2cRoomMessageResponse(messageNumber, body)
-	case config.MESSAGE_ID_ROOM_MESSAGE_NOTIFY:
+	case config.MESSAGE_ID_ROOM_MESSAGE_PUSH:
 		s2cRoomMessagePush(body)
 	case config.MESSAGE_ID_BROADCAST_MESSAGE_RESPONSE:
 		s2cBroadcastMessageResponse(messageNumber, body)
-	case config.MESSAGE_ID_BROADCAST_MESSAGE_NOTIFY:
+	case config.MESSAGE_ID_BROADCAST_MESSAGE_PUSH:
 		s2cBroadcastMessagePush(body)
 	default:
 		showClientError("为支持的服务端消息:%v", impacket.GetMessageId())
@@ -165,5 +164,5 @@ func s2cHandshakeAck() {
 
 // 收到服务端的心跳
 func s2cHeartbeat() {
-	showClientDebug("receive heartbeah")
+	// showClientDebug("receive heartbeah")
 }

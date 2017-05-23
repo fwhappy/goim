@@ -13,50 +13,40 @@ import (
 	"github.com/fwhappy/util"
 )
 
-// SendMessage 通过Id给用户发送一条消息
-func SendMessage(id string, imPacket *protocal.ImPacket) bool {
-	if user, online := hall.UserSet.Get(id); online {
-		user.AppendMessage(imPacket)
-		return true
-	}
-	return false
-}
-
 // HandShake 用户握手
 func HandShake(conn *net.TCPConn, impacket *protocal.ImPacket) (string, *ierror.Error) {
 	// 解析用户数据
 	info, err := msgpack.Unmarshal(impacket.GetBody())
 	if err != nil {
-		core.Logger.Debug("decode error:%v", err.Error())
-		return "", ierror.NewError(-200)
+		return "", ierror.NewError(-100, "HandShake", "")
 	}
 
 	// check数据完整性
 	id, exists := info.JsonGetString("id")
 	if !exists {
-		return "", ierror.NewError(-201, "id")
+		return "", ierror.NewError(-201, id)
 	}
 	nickname, exists := info.JsonGetString("nickname")
 	if !exists {
-		return "", ierror.NewError(-201, "nickname")
+		return "", ierror.NewError(-201, nickname)
 	}
 	// 附加信息
 	extra := info.JsonGetJsonMap("extra")
+	core.Logger.Debug("[HandShake]id:%v, extra:%v", id, extra)
 
 	// 判断用户是否已在线
-	if u, online := hall.UserSet.Get("id"); online {
-		// TODO 踢老的连接下线
-		// TODO 通知用户下线
-		u.Conn.Close()
-
-		core.Logger.Debug("[repeat handshake], id:%v, old remote:%v, new remote:%v", id, u.Conn.RemoteAddr().String(), conn.RemoteAddr().String())
+	if connectedUser, online := hall.UserSet.Get(id); online {
+		core.Logger.Debug("[repeat handshake], id:%v, old remote:%v, new remote:%v", id, connectedUser.Conn.RemoteAddr().String(), conn.RemoteAddr().String())
+		KickUser(connectedUser)
 	}
 
 	u := user.NewUser(id)
 	u.Conn = conn
-	u.Nickname = nickname
-	u.Extra = &extra
+	u.Info.Nickname = nickname
+	u.Info.Extra = &extra
 	hall.UserSet.Add(u)
+
+	core.Logger.Debug("[HandShake]id:%v, user:%v", id, u)
 
 	// 通知用户握手成功
 	body := util.JsonMap{"heartbeat_interval": core.GetAppConfig("heartbeat_interval").(string)}
@@ -109,7 +99,7 @@ func Logout(id string) *ierror.Error {
 	return nil
 }
 
-// 踢出用户
+// KickUser 踢出用户
 func KickUser(u *user.User) {
 	u.QuitOnce.Do(func() {
 		// 将用户从大厅删除
@@ -117,11 +107,16 @@ func KickUser(u *user.User) {
 
 		// 关闭用户连接
 		u.Conn.Close()
+		core.Logger.Debug("u.Conn=%v", u.Conn.RemoteAddr().String())
 
 		// 关闭用户消息队列
 		close(u.Mq)
 
-		// TODO 将用户从房间移除
+		// 将用户从房间移除
+		for _, roomId := range u.RoomIds {
+			// 删除房间用户
+			hall.RemoveRoomUser(roomId, u)
+		}
 
 		core.Logger.Info("[kickUser]id:%v", u.Id)
 	})

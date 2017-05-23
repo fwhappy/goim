@@ -22,11 +22,11 @@ func (s *Set) Len() int {
 }
 
 // Get 根据Id读取用户信息
-func (s *Set) Get(Id string) (*User, bool) {
+func (s *Set) Get(id string) (*User, bool) {
 	s.Mux.Lock()
 	defer s.Mux.Unlock()
 
-	u, exists := s.Users[Id]
+	u, exists := s.Users[id]
 	return u, exists
 }
 
@@ -38,11 +38,11 @@ func (s *Set) Add(u *User) {
 }
 
 // Del 将用户从集合移除
-func (s *Set) Del(Id string) {
+func (s *Set) Del(id string) {
 	s.Mux.Lock()
 	defer s.Mux.Unlock()
 
-	delete(s.Users, Id)
+	delete(s.Users, id)
 }
 
 // IsExists 判断用户是否存在于集合中

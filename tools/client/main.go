@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"goim/config"
 	"net"
 
+	"github.com/fwhappy/protocal"
 	"github.com/fwhappy/util"
 )
 
@@ -47,16 +49,16 @@ func main() {
 func showUsage() {
 	fmt.Println("------------------------------------------------")
 	fmt.Println("usage:")
-	fmt.Println("[握手]1.userId.nickname.extra1.extra2")
-	fmt.Println("[下线]5")
-	fmt.Println("[加入房间]4.1.roomId")
-	fmt.Println("[退出房间]4.3.roomId")
-	fmt.Println("[私人消息]4.101.userId.content")
-	fmt.Println("[私人通知]4.103.userId.content")
-	fmt.Println("[房间消息]4.105.roomId.content")
-	fmt.Println("[房间通知]4.107.roomId.content")
-	fmt.Println("[广播消息]4.109.content")
-	fmt.Println("[广播通知]4.111.content")
+	fmt.Println("[握手]", protocal.PACKAGE_TYPE_HANDSHAKE, ".userId.nickname.extra1.extra2")
+	fmt.Println("[下线]", protocal.PACKAGE_TYPE_KICK)
+	fmt.Println("[加入房间]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_JOIN_ROOM_REQUEST, ".roomId")
+	fmt.Println("[退出房间]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_QUIT_ROOM_REQUEST, ".roomId")
+	fmt.Println("[私人消息]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_PRIVATE_MESSAGE_REQUEST, ".userId.content")
+	// fmt.Println("[私人通知]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_PRIVATE_MESSAGE_NOTIFY, ".userId.content")
+	fmt.Println("[房间消息]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_ROOM_MESSAGE_REQUEST, ".roomId.content")
+	// fmt.Println("[房间通知]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_ROOM_MESSAGE_NOTIFY, ".roomId.content")
+	fmt.Println("[广播消息]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_BROADCAST_MESSAGE_REQUEST, ".content")
+	// fmt.Println("[广播通知]", protocal.PACKAGE_TYPE_DATA, ".", config.MESSAGE_ID_BROADCAST_MESSAGE_NOTIFY, ".content")
 	fmt.Println("------------------------------------------------")
 }
 

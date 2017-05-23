@@ -1,11 +1,14 @@
 package router
 
 import (
+	"goim/config"
 	"goim/core"
 	"net"
 
 	"github.com/fwhappy/protocal"
 
+	messageController "goim/controller/message"
+	roomController "goim/controller/room"
 	userController "goim/controller/user"
 )
 
@@ -38,5 +41,19 @@ func Dispatch(userId *string, conn *net.TCPConn, impacket *protocal.ImPacket, c 
 
 // 数据包分发
 func routerData(userId string, conn *net.TCPConn, impacket *protocal.ImPacket) {
-
+	messageId := int(impacket.GetMessageId())
+	switch messageId {
+	case config.MESSAGE_ID_JOIN_ROOM_REQUEST:
+		roomController.JoinRoom(userId, conn, impacket)
+	case config.MESSAGE_ID_QUIT_ROOM_REQUEST:
+		roomController.QuitRoom(userId, conn, impacket)
+	case config.MESSAGE_ID_PRIVATE_MESSAGE_REQUEST:
+		messageController.PrivateMessage(userId, conn, impacket)
+	case config.MESSAGE_ID_ROOM_MESSAGE_REQUEST:
+		messageController.RoomMessage(userId, conn, impacket)
+	case config.MESSAGE_ID_BROADCAST_MESSAGE_REQUEST:
+		messageController.BroadcastMessage(userId, conn, impacket)
+	default:
+		core.Logger.Error("未支持的消息id:%d", messageId)
+	}
 }

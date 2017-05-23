@@ -5,7 +5,6 @@ import (
 	"goim/core/msgpack"
 	"io"
 	"os"
-	"strconv"
 
 	"github.com/fwhappy/protocal"
 	"github.com/fwhappy/util"
@@ -149,8 +148,9 @@ func s2cBroadcastMessagePush(body util.JsonMap) {
 
 // 收到服务端的握手消息
 func s2cHandshake(body util.JsonMap) {
-	interval, _ := body.JsonGetString("heartbeat_interval")
-	heartbeatInterval, _ = strconv.Atoi(interval)
+
+	interval, _ := body["heartbeat_interval"].(uint64)
+	heartbeatInterval = int(interval)
 	go c2sHandShakeAck()
 	showClientDebug("receive handshake")
 }

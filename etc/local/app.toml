@@ -1,4 +1,4 @@
 # 所属环境
 env="local"
 # 心跳间隔(秒)
-heartbeat_interval="5"
+heartbeat_interval=5

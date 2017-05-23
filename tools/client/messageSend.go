@@ -252,7 +252,7 @@ func c2sHeartBeat() {
 		time.Sleep(time.Duration(heartbeatInterval) * time.Second)
 		// 发送消息给服务器
 		send(protocal.PACKAGE_TYPE_HEARTBEAT, nil)
-		showClientDebug("send c2sHeartBeat")
+		// showClientDebug("send c2sHeartBeat")
 	}
 }
 

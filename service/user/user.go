@@ -8,6 +8,7 @@ import (
 	"goim/response"
 	"goim/user"
 	"net"
+	"time"
 
 	"github.com/fwhappy/protocal"
 	"github.com/fwhappy/util"
@@ -42,6 +43,7 @@ func HandShake(conn *net.TCPConn, impacket *protocal.ImPacket) (string, *ierror.
 
 	u := user.NewUser(id)
 	u.Conn = conn
+	u.HandshakeTime = util.GetTime()
 	u.Info.Nickname = nickname
 	u.Info.Extra = &extra
 	hall.UserSet.Add(u)
@@ -49,7 +51,7 @@ func HandShake(conn *net.TCPConn, impacket *protocal.ImPacket) (string, *ierror.
 	core.Logger.Debug("[HandShake]id:%v, user:%v", id, u)
 
 	// 通知用户握手成功
-	body := util.JsonMap{"heartbeat_interval": core.GetAppConfig("heartbeat_interval").(string)}
+	body := util.JsonMap{"heartbeat_interval": core.GetAppConfig("heartbeat_interval").(int64)}
 	u.WriteMessage(response.GetSuccess(protocal.PACKAGE_TYPE_HANDSHAKE, body))
 
 	core.Logger.Info("[HandShake]id:%v", id)
@@ -70,6 +72,9 @@ func HandShakeAck(id string, impacket *protocal.ImPacket) *ierror.Error {
 	// 开启消息推送
 	go u.SendMessage()
 
+	// 开启心跳检测
+	go listenHeartBeat(u)
+
 	core.Logger.Info("[HandShakeAck]id:%v", id)
 
 	return nil
@@ -78,6 +83,7 @@ func HandShakeAck(id string, impacket *protocal.ImPacket) *ierror.Error {
 // HeartBeat 用户心跳
 func HeartBeat(id string) {
 	if u, online := hall.UserSet.Get(id); online {
+		u.HeartBeatTime = util.GetTime()
 		u.WriteMessage(response.GetSuccess(protocal.PACKAGE_TYPE_HEARTBEAT, nil))
 		// 适时屏蔽
 		// core.Logger.Debug("[HeartBeat]id:%v", id)
@@ -107,7 +113,6 @@ func KickUser(u *user.User) {
 
 		// 关闭用户连接
 		u.Conn.Close()
-		core.Logger.Debug("u.Conn=%v", u.Conn.RemoteAddr().String())
 
 		// 关闭用户消息队列
 		close(u.Mq)
@@ -120,4 +125,34 @@ func KickUser(u *user.User) {
 
 		core.Logger.Info("[kickUser]id:%v", u.Id)
 	})
+}
+
+// 监听用户心跳
+func listenHeartBeat(u *user.User) {
+	// 捕获异常
+	defer util.RecoverPanic()
+
+	// 读取心跳间隔
+	heartBeatInterval := core.GetAppConfig("heartbeat_interval").(int64)
+
+	for {
+		time.Sleep(time.Second * time.Duration(heartBeatInterval))
+		user, online := hall.UserSet.Get(u.Id)
+		if !online {
+			core.Logger.Debug("用户已下线，停止心跳监测, id:%v", u.Id)
+			break
+		}
+
+		if user.HandshakeTime != u.HandshakeTime {
+			// 用户已经被顶号或者重新登录
+			core.Logger.Debug("用户已重新登录，停止心跳监测, id:%v", u.Id)
+			break
+		}
+
+		if util.GetTime()-user.HeartBeatTime > 2*heartBeatInterval {
+			core.Logger.Debug("用户心跳停止，踢下线, id:%v", u.Id)
+			KickUser(u)
+			break
+		}
+	}
 }

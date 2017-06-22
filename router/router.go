@@ -30,7 +30,6 @@ func Dispatch(userId *string, conn *net.TCPConn, impacket *protocal.ImPacket, c 
 		// 数据包路由分发
 		routerData(*userId, conn, impacket)
 	case protocal.PACKAGE_TYPE_KICK: // 下线
-		// 直接调用defer触发的用户退出
 		userController.Logout(*userId, conn, impacket)
 	case protocal.PACKAGE_TYPE_SYSTEM: // 系统
 		// game.SystemHandlerAction(conn, impacket)

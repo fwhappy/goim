@@ -19,17 +19,17 @@ func HandShake(conn *net.TCPConn, impacket *protocal.ImPacket) (string, *ierror.
 	// 解析用户数据
 	info, err := msgpack.Unmarshal(impacket.GetBody())
 	if err != nil {
-		return "", ierror.NewError(-100, "HandShake", "")
+		return "", ierror.NewError(-100, "HandShake", err.Error())
 	}
 
 	// check数据完整性
 	id, exists := info.JsonGetString("id")
-	if !exists {
-		return "", ierror.NewError(-201, id)
+	if !exists || id == "" {
+		return "", ierror.NewError(-101, "HandShake", "id")
 	}
 	nickname, exists := info.JsonGetString("nickname")
-	if !exists {
-		return "", ierror.NewError(-201, nickname)
+	if !exists || nickname == "" {
+		return "", ierror.NewError(-101, "HandShake", "nickname")
 	}
 	// 附加信息
 	extra := info.JsonGetJsonMap("extra")
@@ -47,7 +47,6 @@ func HandShake(conn *net.TCPConn, impacket *protocal.ImPacket) (string, *ierror.
 	u.Info.Nickname = nickname
 	u.Info.Extra = &extra
 	hall.UserSet.Add(u)
-
 	core.Logger.Debug("[HandShake]id:%v, user:%v", id, u)
 
 	// 通知用户握手成功

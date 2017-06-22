@@ -30,18 +30,18 @@ func init() {
 func main() {
 	defer util.RecoverPanic()
 
-	// // 初始化基础配置
+	// 初始化基础配置
 	core.LoadAppConfig(core.GetConfigFile("app.toml", *confDir))
-	// // 初始化日志配置
+	// 初始化日志配置
 	core.LoadLoggerConfig(core.GetConfigFile("log.toml", *confDir))
 	defer core.Logger.Flush()
 
 	// 开启监听端口 & 提供服务
-	listenAndServe()
+	startListen()
 }
 
-// listenAndServe 开始监听并提供服务
-func listenAndServe() {
+// listen 开始监听并提供服务
+func startListen() {
 	listenRemote := "0.0.0.0:" + *port
 	tcpAddr, resolveErr := net.ResolveTCPAddr("tcp", listenRemote)
 	if resolveErr != nil {
